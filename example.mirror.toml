@@ -1,0 +1,8 @@
+DB_HOST="localhost"
+DB_NAME="mirror"
+DB_USER="root"
+DB_PASSWORD="root"
+distributions = ["trixie", "bookworm", "bullseye", "sid"]
+architectures = ["all", "amd64", "i386", "arm64", "armhf"]
+components = ["main", "contrib", "non-free", "non-free-firmware"]
+mirror = "http://ftp.debian.org/debian"
