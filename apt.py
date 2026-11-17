@@ -16,14 +16,20 @@ class mirror:
         self.db_cursor = db.cursor() if db else None
         self.distros = distros
     def syncdb(self):
+        sql_query = f"""-- sql
+                                    INSERT INTO packages (package, distro, arch, component, version, filename, size, sha256sum) 
+                                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+        data = []
         for distro in self.distros:
             for arch in distro.architectures:
                 for component in distro.components:
                     response = requests.get(f"{self.url}/dists/{distro.name}/{component}/binary-{arch}/Packages.gz")
+                    print(f"Downloaded: {distro.name}-{arch}")
                     if response.status_code == 200:
                         response.raw.decode_content = True
                         f = gzip.decompress(response.content)  # Decompress the response content
                         f = f.decode('utf-8')  # Decode the decompressed content
+                        
                         for line in f.splitlines():
                             if line.startswith("Package:"):
                                 package = line.split(":")[1].strip()
@@ -35,10 +41,12 @@ class mirror:
                                 size = int(line.split(":")[1].strip())
                             elif line.startswith("SHA256:"):
                                 sha256sum = line.split(":")[1].strip()
-                                self.db_cursor.execute(f"""-- sql
-                                    INSERT INTO packages (package, distro, arch, component, version, filename, size, sha256sum) 
-                                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", (package, distro.name, arch, component, version, filename, size, sha256sum))
-                                self.db.commit()
+                                data.append([package, distro.name, arch, component, version, filename, size, sha256sum])
+                print(f"Parsed {distro.name}")
+                self.db_cursor.executemany(sql_query, data)
+                self.db.commit()
+                print(f"Inserrted {distro.name}")
+                data = []
         return self
 
 class distro():
