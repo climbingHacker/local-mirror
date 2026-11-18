@@ -1,6 +1,8 @@
 import requests
 import mysql.connector
 import gzip
+
+
 class mirror:
     def __checkdb:
         if not self.db:
@@ -20,6 +22,7 @@ class mirror:
         self.db = db
         self.db_cursor = db.cursor() if db else None
         self.distros = distros
+
     def syncdb(self):
         if not self._mirror__checkdb:
             return 0
@@ -30,13 +33,17 @@ class mirror:
         for distro in self.distros:
             for arch in distro.architectures:
                 for component in distro.components:
-                    response = requests.get(f"{self.url}/dists/{distro.name}/{component}/binary-{arch}/Packages.gz")
+                    response = requests.get(
+                        f"{self.url}/dists/{distro.name}/{component}/binary-{arch}/Packages.gz"
+                    )
                     print(f"Downloaded: {distro.name}-{arch}")
                     if response.status_code == 200:
                         response.raw.decode_content = True
-                        f = gzip.decompress(response.content)  # Decompress the response content
-                        f = f.decode('utf-8')  # Decode the decompressed content
-                        
+                        f = gzip.decompress(
+                            response.content
+                        )  # Decompress the response content
+                        f = f.decode("utf-8")  # Decode the decompressed content
+
                         for line in f.splitlines():
                             if line.startswith("Package:"):
                                 package = line.split(":")[1].strip()
@@ -48,7 +55,18 @@ class mirror:
                                 size = int(line.split(":")[1].strip())
                             elif line.startswith("SHA256:"):
                                 sha256sum = line.split(":")[1].strip()
-                                data.append([package, distro.name, arch, component, version, filename, size, sha256sum])
+                                data.append(
+                                    [
+                                        package,
+                                        distro.name,
+                                        arch,
+                                        component,
+                                        version,
+                                        filename,
+                                        size,
+                                        sha256sum,
+                                    ]
+                                )
                 print(f"Parsed {distro.name}")
                 self.db_cursor.executemany(sql_query, data)
                 self.db.commit()
@@ -56,19 +74,31 @@ class mirror:
                 data = []
         return self
 
-class distro():
+    def package_tracked():
+        if not self._mirror__checkdb:
+            return 0
+        
+
+        return false
+
+
+class distro:
     components = ["main", "contrib", "non-free", "non-free-firmware"]
     architectures = ["all", "amd64", "i386", "arm64", "armhf"]
+
     def __init__(self, name, architectures=None, components=None):
         self.name = name
         self.architectures = architectures or self.architectures
         self.components = components or self.components
 
-class component():
-    
+
+class component:
+
     def __init__(self, name):
         self.name = name
         return self
-class architecture():
+
+
+class architecture:
     def __init__(self, arch):
         self.arch = arch
