@@ -2,6 +2,11 @@ import requests
 import mysql.connector
 import gzip
 class mirror:
+    def __checkdb:
+        if not self.db:
+            raise ValueError("No database")
+            return 0
+        return 1
     def __init__(self, url, db=None, distros=None):
         """
         Initializes a new instance of the mirror class.
@@ -16,6 +21,8 @@ class mirror:
         self.db_cursor = db.cursor() if db else None
         self.distros = distros
     def syncdb(self):
+        if not self._mirror__checkdb:
+            return 0
         sql_query = f"""-- sql
                                     INSERT INTO packages (package, distro, arch, component, version, filename, size, sha256sum) 
                                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
