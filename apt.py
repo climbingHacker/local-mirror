@@ -4,11 +4,12 @@ import gzip
 
 
 class mirror:
-    def __checkdb:
+    def __checkdb(self):
         if not self.db:
             raise ValueError("No database")
             return 0
         return 1
+
     def __init__(self, url, db=None, distros=None):
         """
         Initializes a new instance of the mirror class.
@@ -74,12 +75,24 @@ class mirror:
                 data = []
         return self
 
-    def package_tracked():
+    def package_tracked(self, name):
         if not self._mirror__checkdb:
             return 0
-        
+        self.db_cursor.execute(
+            "SELECT * FROM packages_tracked WHERE package = %s", ([name])
+        )
+        if self.db_cursor.fetchone():
+            return True
+        return False
 
-        return false
+    def track_package(self, name):
+        if not self._mirror__checkdb:
+            return 0
+        self.db_cursor.execute(
+            "INSERT INTO packages_tracked (package) VALUES (%s)", ([name])
+        )
+        self.db.commit()
+        return True
 
 
 class distro:
