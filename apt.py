@@ -1,6 +1,8 @@
 import requests
 import mysql.connector
 import gzip
+from pathlib import Path
+import os
 
 
 class mirror:
@@ -45,9 +47,10 @@ class mirror:
                             response.content
                         )  # Decompress the response content
                         f = f.decode("utf-8")  # Decode the decompressed content
-                        folder_path = Path(
-                            os.getcwd() + os.path.join(f"mirror/{distro.name}/{component}/binary-{arch}/")
-                        )
+                        folder_path = Path((f"mirror/{distro.name}/{component}/binary-{arch}"))
+                        if not folder_path.exists():
+                            print(f"created folder: {folder_path}")
+                            folder_path.mkdir(parents=True)
                         with open(f"mirror/{distro.name}/{component}/binary-{arch}/Packages.gz", "wb+" ) as file:
                             file.write(response.content)
 
