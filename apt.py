@@ -10,7 +10,7 @@ class mirror:
             return 0
         return 1
 
-    def __init__(self, url, db=None, distros=None):
+    def __init__(self, url, db=None, distros=None, mirrorPath=None):
         """
         Initializes a new instance of the mirror class.
         Args:
@@ -23,6 +23,7 @@ class mirror:
         self.db = db
         self.db_cursor = db.cursor() if db else None
         self.distros = distros
+        self.localpath = mirrorPath
 
     def syncdb(self):
         if not self._mirror__checkdb:
@@ -44,6 +45,11 @@ class mirror:
                             response.content
                         )  # Decompress the response content
                         f = f.decode("utf-8")  # Decode the decompressed content
+                        folder_path = Path(
+                            os.getcwd() + os.path.join(f"mirror/{distro.name}/{component}/binary-{arch}/")
+                        )
+                        with open(f"mirror/{distro.name}/{component}/binary-{arch}/Packages.gz", "wb+" ) as file:
+                            file.write(response.content)
 
                         for line in f.splitlines():
                             if line.startswith("Package:"):
