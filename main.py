@@ -34,15 +34,13 @@ def index():
     return "test"
 
 
-@app.route("/pool/<component>/<letter>/<package>/<filename>")
+@app.route("/debian/pool/<component>/<letter>/<package>/<filename>")
 def package(component, letter, package, filename):
-    if (
-        mirror.package_tracked(package)
+    if (mirror.package_tracked(package)
         and Path("mirror/pool/{component}/{letter}/{package}/{filename}").exists()
     ):
         with open(f"mirror/pool/{component}/{letter}/{package}/{filename}", "rb") as p:
             return flask.send_file(p)
-    mirror.track_package(package)
     req = requests.get(
         config["mirror"] + f"/pool/{component}/{letter}/{package}/{filename}",
         stream=True,
@@ -75,6 +73,7 @@ def package(component, letter, package, filename):
                 "mirror/pool/{component}/{letter}/{package}/{filename}.part}",
                 "mirror/pool/{component}/{letter}/{package}/{filename}",
             )
+            mirror.track_package(package)
 
     if req.status_code == 200:
         return flask.Response(generator())
