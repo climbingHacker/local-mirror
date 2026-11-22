@@ -5,14 +5,13 @@ with open("mirror.toml", "rb") as f:
     config = tomllib.load(f)
 
 db = mysql.connector.connect(
-    host=config["DB_HOST"],
-    user=config["DB_USER"],
-    password=config["DB_PASSWORD"]
+    host=config["DB_HOST"], user=config["DB_USER"], password=config["DB_PASSWORD"]
 )
 db_cursor = db.cursor()
 db_cursor.execute("CREATE DATABASE IF NOT EXISTS debian")
 db_cursor.execute("USE debian")
-db_cursor.execute("""-- sql
+db_cursor.execute(
+    """-- sql
         CREATE TABLE IF NOT EXISTS distros (
             id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
             distro VARCHAR(255),
@@ -26,9 +25,11 @@ db_cursor.execute("""-- sql
             ppc64el BOOLEAN NOT NULL,
             s390x BOOLEAN NOT NULL
         ) WITH SYSTEM VERSIONING
-    """)
+    """
+)
 
-db_cursor.execute("""-- sql
+db_cursor.execute(
+    """-- sql
     CREATE TABLE IF NOT EXISTS packages (
         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         package VARCHAR(255),
@@ -41,8 +42,20 @@ db_cursor.execute("""-- sql
         sha256sum VARCHAR(64)
     ) WITH SYSTEM VERSIONING""".format(
         distros=",".join([f"'{d}'" for d in config["distributions"]]),
-        architectures=",".join([f"'{a}'" for a in config["architectures"]])))
+        architectures=",".join([f"'{a}'" for a in config["architectures"]]),
+    )
+)
 
+db_cursor.execute(
+    """-- sql
+        CREATE TABLE IF NOT EXISTS packages_tracked (
+        package VARCHAR(255) NOT NULL PRIMARY KEY,
+        distro ENUM({distros}),
+        arch ENUM({architectures}))""".format(
+        distros=",".join([f"'{d}'" for d in config["distributions"]]),
+        architectures=",".join([f"'{a}'" for a in config["architectures"]]),
+    )
+)
 
 # for distro in config["distributions"]:
 #     for arch in config["architectures"]:
